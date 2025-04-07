@@ -1,0 +1,1870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Week 5: Data Reshaping & Advanced EDA for Malaria Data</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <button class="sidebar-toggle" id="sidebar-toggle">Menu</button>
+    
+    <div class="sidebar" id="sidebar">
+        <h3>Course Navigation</h3>
+        <ul>
+            <li class="menu-item">
+                <a href="#week5">📅 Week 5: Data Reshaping & Advanced EDA</a>
+                <ul class="sub-menu">
+                    <li><a href="#pivoting">Data Pivoting</a></li>
+                    <li><a href="#joins">Data Joining & Merging</a></li>
+                    <li><a href="#outliers">Outlier Detection</a></li>
+                </ul>
+            </li>
+            <li class="menu-item">
+                <a href="#exercises5">📌 Week 5: Exercises</a>
+                <ul class="sub-menu">
+                    <li><a href="#ex-pivoting">Pivoting Exercises</a></li>
+                    <li><a href="#ex-joins">Joining Exercises</a></li>
+                    <li><a href="#ex-outliers">Outlier Detection Exercises</a></li>
+                </ul>
+            </li>
+            <li class="menu-item">
+                <a href="#solutions5">📌 Week 5: Solutions</a>
+                <ul class="sub-menu">
+                    <li><a href="#sol-pivoting">Pivoting Solutions</a></li>
+                    <li><a href="#sol-joins">Joining Solutions</a></li>
+                    <li><a href="#sol-outliers">Outlier Detection Solutions</a></li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+    
+    <div class="container">
+        <h1 id="week5">📅 Week 5: Data Reshaping & Advanced EDA for Malaria Data</h1>
+        
+        <p>This week, we will:<br>
+        ✅ <strong>Reshape malaria data</strong> using <code>pivot_longer()</code> and <code>pivot_wider()</code><br>
+        ✅ <strong>Join and merge datasets</strong> with <code>left_join()</code>, <code>inner_join()</code>, and more<br>
+        ✅ <strong>Detect outliers</strong> using boxplots, scatterplots, and statistical methods</p>
+        
+        <hr>
+        
+        <h2 id="pivoting">1️⃣ Pivoting Malaria Data</h2>
+        
+        <h3>Why Pivot Data?</h3>
+        <p>📌 <strong>Data pivoting</strong> transforms data between "wide" and "long" formats. This is crucial for visualization, analysis, and making data compatible with different R functions.</p>
+        
+        <h3>Step 1: Understanding Data Formats</h3>
+        <div class="r-code">
+            <code>
+# Load required packages
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+
+# Example data: Monthly malaria cases by region (wide format)
+malaria_wide <- data.frame(
+  region = c("Central", "North", "South", "East", "West"),
+  Jan = c(245, 189, 324, 176, 221),
+  Feb = c(231, 192, 298, 153, 187),
+  Mar = c(264, 205, 310, 162, 192),
+  Apr = c(312, 227, 346, 185, 219)
+)
+
+print(malaria_wide)
+            </code>
+        </div>
+        
+        <div class="explanation">
+            <h4>🔍 Explanation:</h4>
+            <p>✔ "Wide format" has variables spread across columns (each month is a separate column)<br>
+            ✔ This format is often how data is initially recorded and is human-readable<br>
+            ✔ However, many R functions (especially in ggplot2) work better with "long format" data</p>
+        </div>
+        
+        <hr>
+        
+        <h3>Step 2: Pivot Longer (Wide to Long)</h3>
+        <div class="r-code">
+            <code>
+# Convert from wide to long format
+malaria_long <- malaria_wide %>%
+  pivot_longer(
+    cols = Jan:Apr,         # Columns to pivot
+    names_to = "month",     # Name of the new column for variable names
+    values_to = "cases"     # Name of the new column for values
+  )
+
+print(malaria_long)
+
+# Visualize the long data
+ggplot(malaria_long, aes(x = month, y = cases, fill = region)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(
+    title = "Malaria Cases by Region and Month",
+    x = "Month",
+    y = "Number of Cases"
+  ) +
+  theme_minimal()
+            </code>
+        </div>
+        
+        <div class="explanation">
+            <h4>🔍 Explanation:</h4>
+            <p>✔ <code>pivot_longer()</code> transforms data from wide to long format<br>
+            ✔ <code>cols</code> specifies which columns to pivot (all months in this case)<br>
+            ✔ <code>names_to</code> creates a new column containing the original column names (months)<br>
+            ✔ <code>values_to</code> creates a new column containing the values (cases)<br>
+            ✔ Long data is ideal for visualizations with ggplot2</p>
+        </div>
+        
+        <hr>
+        
+        <h3>Step 3: Pivot Wider (Long to Wide)</h3>
+        <div class="r-code">
+            <code>
+# Convert from long to wide format
+malaria_wide_restored <- malaria_long %>%
+  pivot_wider(
+    names_from = month,     # Column containing the names for new columns
+    values_from = cases     # Column containing the values
+  )
+
+print(malaria_wide_restored)
+
+# Create a region-month summary
+region_month_summary <- malaria_long %>%
+  group_by(region) %>%
+  summarise(
+    average_cases = mean(cases),
+    total_cases = sum(cases),
+    .groups = "drop"
+  ) %>%
+  arrange(desc(total_cases))
+
+print(region_month_summary)
+            </code>
+        </div>
+        
+        <div class="explanation">
+            <h4>🔍 Explanation:</h4>
+            <p>✔ <code>pivot_wider()</code> transforms data from long to wide format<br>
+            ✔ <code>names_from</code> specifies which column contains the names for the new columns<br>
+            ✔ <code>values_from</code> specifies which column contains the values<br>
+            ✔ Wide format can be better for certain analyses or when exporting to other software</p>
+        </div>
+        
+        <hr>
+        
+        <h3>Step 4: Advanced Pivoting with Real Malaria Data</h3>
+        <div class="r-code">
+            <code>
+# Load a malaria surveillance dataset
+malaria_surveillance <- read.csv("malaria_surveillance.csv")
+
+# Reshape to create a region-year matrix of cases
+region_year_matrix <- malaria_surveillance %>%
+  group_by(region, year) %>%
+  summarise(total_cases = sum(cases, na.rm = TRUE), .groups = "drop") %>%
+  pivot_wider(
+    names_from = year,
+    values_from = total_cases,
+    names_prefix = "year_"
+  )
+
+print(region_year_matrix)
+
+# Calculate year-over-year change
+region_year_matrix <- region_year_matrix %>%
+  mutate(
+    # Example calculation for 2019-2020 change
+    change_19_20 = ((year_2020 - year_2019) / year_2019) * 100
+  )
+
+# Reshape demographic data for visualization
+age_gender_cases <- malaria_surveillance %>%
+  group_by(age_group, gender) %>%
+  summarise(cases = sum(cases, na.rm = TRUE), .groups = "drop") %>%
+  pivot_wider(
+    names_from = gender,
+    values_from = cases
+  ) %>%
+  mutate(male_to_female_ratio = Male / Female)
+
+print(age_gender_cases)
+            </code>
+        </div>
+        
+        <div class="explanation">
+            <h4>🔍 Explanation:</h4>
+            <p>✔ Pivoting allows us to create specialized matrices for analysis<br>
+            ✔ <code>names_prefix</code> adds a prefix to the newly created column names<br>
+            ✔ We can easily calculate metrics across rows in the wide format<br>
+            ✔ Different analyses may require different data shapes</p>
+        </div>
+        
+        <hr>
+        
+        <h2 id="joins">2️⃣ Joining and Merging Malaria Datasets</h2>
+        
+        <h3>Why Join Datasets?</h3>
+        <p>📌 <strong>Joining datasets</strong> combines information from different sources, enriching your analysis with additional variables like demographics, environmental factors, or intervention data.</p>
+        
+        <h3>Step 1: Understanding Join Types</h3>
+        <div class="r-code">
+            <code>
+# Create example datasets
+# Malaria case data
+malaria_cases <- data.frame(
+  district_id = c(101, 102, 103, 104, 105, 106),
+  district_name = c("Metropolis", "Riverside", "Highland", "Lakeside", "Mountain", "Valley"),
+  cases_2023 = c(423, 251, 387, 142, 195, 326),
+  population = c(54200, 32500, 41800, 28900, 23700, 36500)
+)
+
+# Intervention data
+interventions <- data.frame(
+  district_id = c(101, 102, 103, 105, 107, 108),
+  itn_coverage = c(76, 54, 82, 63, 71, 58),  # Insecticide-treated net coverage (%)
+  irs_coverage = c(45, 32, 68, 41, 52, 38),  # Indoor residual spraying coverage (%)
+  treatment_centers = c(8, 5, 7, 3, 6, 4)    # Number of treatment centers
+)
+
+# Examine the datasets
+print(malaria_cases)
+print(interventions)
+            </code>
+        </div>
+        
+        <div class="explanation">
+            <h4>🔍 Explanation:</h4>
+            <p>✔ We often have related datasets with a common identifier (district_id in this case)<br>
+            ✔ <code>malaria_cases</code> contains disease burden information<br>
+            ✔ <code>interventions</code> contains preventive measures information<br>
+            ✔ Note that not all districts appear in both datasets (this will affect different join types)</p>
+        </div>
+        
+        <hr>
+        
+        <h3>Step 2: Inner Join</h3>
+        <div class="r-code">
+            <code>
+# Inner join: Keep only matching rows
+inner_joined <- malaria_cases %>%
+  inner_join(interventions, by = "district_id")
+
+print(inner_joined)
+
+# Count the number of rows
+cat("Original datasets:", 
+    "malaria_cases =", nrow(malaria_cases), "rows,", 
+    "interventions =", nrow(interventions), "rows\n")
+cat("Inner joined result:", nrow(inner_joined), "rows\n")
+            </code>
+        </div>
+        
+        <div class="explanation">
+            <h4>🔍 Explanation:</h4>
+            <p>✔ <code>inner_join()</code> keeps only rows that have matches in both datasets<br>
+            ✔ Districts 104 and 106 (from malaria_cases) and 107, 108 (from interventions) were dropped<br>
+            ✔ Use inner join when you want to analyze only areas with complete information<br>
+            ✔ This can lead to data loss if the matching is imperfect</p>
+        </div>
+        
+        <hr>
+        
+        <h3>Step 3: Left Join</h3>
+        <div class="r-code">
+            <code>
+# Left join: Keep all rows from the left dataset
+left_joined <- malaria_cases %>%
+  left_join(interventions, by = "district_id")
+
+print(left_joined)
+
+# Check for missing values introduced by the join
+missing_intervention_data <- left_joined %>%
+  filter(is.na(itn_coverage)) %>%
+  select(district_id, district_name)
+
+print("Districts missing intervention data:")
+print(missing_intervention_data)
+            </code>
+        </div>
+        
+        <div class="explanation">
+            <h4>🔍 Explanation:</h4>
+            <p>✔ <code>left_join()</code> keeps all rows from the first (left) dataset<br>
+            ✔ Adds matching data from the second dataset where available<br>
+            ✔ Fills with <code>NA</code> when there's no match (districts 104 and 106)<br>
+            ✔ Left join is useful when you want to preserve your primary dataset</p>
+        </div>
+        
+        <hr>
+        
+        <h3>Step 4: Other Join Types and Advanced Joining</h3>
+        <div class="r-code">
+            <code>
+# Right join: Keep all rows from the right dataset
+right_joined <- malaria_cases %>%
+  right_join(interventions, by = "district_id")
+
+print(right_joined)
+
+# Full join: Keep all rows from both datasets
+full_joined <- malaria_cases %>%
+  full_join(interventions, by = "district_id")
+
+print(full_joined)
+
+# Generate incidence rates for analysis
+analysis_data <- left_joined %>%
+  mutate(
+    incidence_per_1000 = (cases_2023 / population) * 1000,
+    itn_coverage = ifelse(is.na(itn_coverage), mean(itn_coverage, na.rm = TRUE), itn_coverage),
+    irs_coverage = ifelse(is.na(irs_coverage), mean(irs_coverage, na.rm = TRUE), irs_coverage)
+  )
+
+# Examine relationship between interventions and incidence
+ggplot(analysis_data, aes(x = itn_coverage, y = incidence_per_1000)) +
+  geom_point(aes(size = population), alpha = 0.7) +
+  geom_smooth(method = "lm", se = TRUE, color = "blue") +
+  labs(
+    title = "Relationship Between ITN Coverage and Malaria Incidence",
+    x = "ITN Coverage (%)",
+    y = "Incidence per 1000 Population",
+    size = "Population"
+  ) +
+  theme_minimal()
+            </code>
+        </div>
+        
+        <div class="explanation">
+            <h4>🔍 Explanation:</h4>
+            <p>✔ <code>right_join()</code> keeps all rows from the second (right) dataset<br>
+            ✔ <code>full_join()</code> keeps all rows from both datasets (union)<br>
+            ✔ After joining, we often need to handle missing values<br>
+            ✔ Joined data enables analyses of relationships between different variables</p>
+        </div>
+        
+        <hr>
+        
+        <h3>Step 5: Joining Multiple Datasets</h3>
+        <div class="r-code">
+            <code>
+# Create a third dataset with environmental factors
+environmental <- data.frame(
+  district_id = c(101, 102, 103, 104, 105, 108),
+  annual_rainfall = c(1240, 980, 1450, 1100, 1680, 890),  # mm
+  avg_temperature = c(24.8, 26.3, 22.1, 25.7, 20.6, 27.2), # °C
+  elevation = c(320, 180, 850, 210, 1200, 150)             # meters
+)
+
+# Chain multiple joins
+complete_dataset <- malaria_cases %>%
+  left_join(interventions, by = "district_id") %>%
+  left_join(environmental, by = "district_id")
+
+print(complete_dataset)
+
+# Create a correlation matrix for numeric variables
+correlation_data <- complete_dataset %>%
+  select(cases_2023, population, itn_coverage, irs_coverage, 
+         treatment_centers, annual_rainfall, avg_temperature, elevation) %>%
+  cor(use = "pairwise.complete.obs")  # Handle missing values
+
+print(round(correlation_data, 2))
+
+# Select the strongest correlations with cases
+cases_correlations <- correlation_data[1, -1]  # First row (cases), excluding self-correlation
+strongest_factors <- sort(abs(cases_correlations), decreasing = TRUE)
+
+print("Strongest correlations with malaria cases:")
+print(strongest_factors)
+            </code>
+        </div>
+        
+        <div class="explanation">
+            <h4>🔍 Explanation:</h4>
+            <p>✔ We can chain multiple joins to combine several datasets<br>
+            ✔ <code>use = "pairwise.complete.obs"</code> calculates correlations using all available pairs<br>
+            ✔ Combining diverse datasets allows for multifactorial analysis<br>
+            ✔ We can identify the strongest correlations with malaria cases</p>
+        </div>
+        
+        <hr>
+        
+        <h2 id="outliers">3️⃣ Detecting Outliers in Malaria Data</h2>
+        
+        <h3>Why Detect Outliers?</h3>
+        <p>📌 <strong>Outlier detection</strong> helps identify unusual values that may represent data entry errors, special events (outbreaks), or important patterns requiring attention.</p>
+        
+        <h3>Step 1: Visualizing Distributions with Boxplots</h3>
+        <div class="r-code">
+            <code>
+# Create example dataset with outliers
+malaria_districts <- data.frame(
+  district = paste0("District_", 1:30),
+  cases = c(124, 156, 98, 145, 167, 132, 118, 159, 142, 106,
+            128, 152, 137, 164, 115, 143, 129, 151, 147, 136,
+            125, 149, 138, 147, 543, 165, 109, 154, 142, 161),
+  incidence = c(8.2, 7.6, 5.1, 6.9, 7.8, 6.3, 5.8, 7.2, 6.5, 5.2,
+                6.4, 6.8, 6.5, 7.5, 5.7, 6.7, 6.2, 7.0, 6.9, 6.4,
+                6.1, 6.8, 6.5, 6.7, 25.4, 7.6, 5.3, 7.1, 6.6, 7.4)
+)
+
+# Create boxplot for cases
+ggplot(malaria_districts, aes(y = cases)) +
+  geom_boxplot(fill = "lightblue") +
+  labs(
+    title = "Distribution of Malaria Cases by District",
+    y = "Number of Cases"
+  ) +
+  theme_minimal()
+
+# Create boxplot for incidence
+ggplot(malaria_districts, aes(y = incidence)) +
+  geom_boxplot(fill = "lightgreen") +
+  labs(
+    title = "Distribution of Malaria Incidence by District",
+    y = "Incidence per 1000 Population"
+  ) +
+  theme_minimal()
+            </code>
+        </div>
+        
+        <div class="explanation">
+            <h4>🔍 Explanation:</h4>
+            <p>✔ Boxplots show the distribution of values and highlight potential outliers<br>
+            ✔ The box represents the interquartile range (IQR: 25th to 75th percentile)<br>
+            ✔ The line in the box is the median (50th percentile)<br>
+            ✔ Points beyond the whiskers (1.5 × IQR from the box) are considered outliers</p>
+        </div>
+        
+        <hr>
+        
+        <h3>Step 2: Identifying Specific Outliers</h3>
+        <div class="r-code">
+            <code>
+# Identify outliers using IQR method
+identify_outliers <- function(x) {
+  q1 <- quantile(x, 0.25)
+  q3 <- quantile(x, 0.75)
+  iqr <- q3 - q1
+  lower_bound <- q1 - 1.5 * iqr
+  upper_bound <- q3 + 1.5 * iqr
+  
+  return(x < lower_bound | x > upper_bound)
+}
+
+# Add outlier indicators to the dataset
+malaria_districts <- malaria_districts %>%
+  mutate(
+    cases_outlier = identify_outliers(cases),
+    incidence_outlier = identify_outliers(incidence)
+  )
+
+# View outliers
+malaria_outliers <- malaria_districts %>%
+  filter(cases_outlier | incidence_outlier)
+
+print(malaria_outliers)
+
+# Calculate the percentage of outliers
+outlier_percentage <- nrow(malaria_outliers) / nrow(malaria_districts) * 100
+cat("Percentage of districts with outliers:", round(outlier_percentage, 1), "%\n")
+            </code>
+        </div>
+        
+        <div class="explanation">
+            <h4>🔍 Explanation:</h4>
+            <p>✔ The IQR method is a common approach for detecting outliers<br>
+            ✔ Values beyond 1.5 × IQR from the quartiles are flagged as outliers<br>
+            ✔ We create a function to identify outliers systematically<br>
+            ✔ This helps us quantify and examine outliers specifically</p>
+        </div>
+        
+        <hr>
+        
+        <h3>Step 3: Visualizing Outliers with Scatterplots</h3>
+        <div class="r-code">
+            <code>
+# Add population data (for demonstration)
+set.seed(123)
+malaria_districts$population <- round(runif(30, 15000, 30000))
+
+# Calculate incidence
+malaria_districts$calculated_incidence <- (malaria_districts$cases / malaria_districts$population) * 1000
+
+# Create scatterplot with highlighted outliers
+ggplot(malaria_districts, aes(x = population, y = cases)) +
+  geom_point(aes(color = cases_outlier), size = 3, alpha = 0.7) +
+  scale_color_manual(values = c("blue", "red"), 
+                     labels = c("Normal", "Outlier")) +
+  labs(
+    title = "Malaria Cases vs Population",
+    subtitle = "Outliers highlighted in red",
+    x = "Population",
+    y = "Number of Cases",
+    color = "Status"
+  ) +
+  theme_minimal()
+
+# Create a scatterplot with calculated incidence
+ggplot(malaria_districts, aes(x = population, y = calculated_incidence)) +
+  geom_point(aes(color = cases_outlier), size = 3, alpha = 0.7) +
+  scale_color_manual(values = c("blue", "red"), 
+                     labels = c("Normal", "Outlier")) +
+  labs(
+    title = "Malaria Incidence vs Population",
+    subtitle = "Districts with outlier case counts highlighted in red",
+    x = "Population",
+    y = "Incidence per 1000 Population",
+    color = "Status"
+  ) +
+  theme_minimal()
+            </code>
+        </div>
+        
+        <div class="explanation">
+            <h4>🔍 Explanation:</h4>
+            <p>✔ Scatterplots help visualize the relationship between two variables<br>
+            ✔ We can highlight outliers to see their position relative to other points<br>
+            ✔ Some outliers in raw case counts might be explained by population size<br>
+            ✔ Calculating incidence (cases per population) can normalize for population differences</p>
+        </div>
+        
+        <hr>
+        
+        <h3>Step 4: Statistical Detection of Outliers</h3>
+        <div class="r-code">
+            <code>
+# Z-Score method
+malaria_districts <- malaria_districts %>%
+  mutate(
+    cases_z = (cases - mean(cases)) / sd(cases),
+    incidence_z = (incidence - mean(incidence)) / sd(incidence),
+    zscore_outlier = abs(cases_z) > 2  # Flag as outlier if |z| > 2
+  )
+
+# View districts with high z-scores
+z_outliers <- malaria_districts %>%
+  filter(zscore_outlier) %>%
+  select(district, cases, cases_z, incidence, incidence_z)
+
+print(z_outliers)
+
+# DBSCAN clustering method for multivariate outlier detection
+if (!require("dbscan")) {
+  install.packages("dbscan")
+  library(dbscan)
+}
+
+# Prepare data for DBSCAN
+outlier_data <- malaria_districts %>%
+  select(cases, incidence, population) %>%
+  scale()  # Standardize variables
+
+# Run DBSCAN
+dbscan_result <- dbscan(outlier_data, eps = 0.8, minPts = 3)
+
+# Add cluster assignments to the dataset
+malaria_districts$cluster <- dbscan_result$cluster
+# In DBSCAN, points with cluster = 0 are outliers
+malaria_districts$dbscan_outlier <- malaria_districts$cluster == 0
+
+# View DBSCAN outliers
+dbscan_outliers <- malaria_districts %>%
+  filter(dbscan_outlier) %>%
+  select(district, cases, incidence, population, cluster)
+
+print(dbscan_outliers)
+            </code>
+        </div>
+        
+        <div class="explanation">
+            <h4>🔍 Explanation:</h4>
+            <p>✔ Z-scores standardize values based on mean and standard deviation<br>
+            ✔ Observations with |z| > 2 are often considered potential outliers (beyond 95% of a normal distribution)<br>
+            ✔ DBSCAN is a clustering algorithm that can identify outliers in multiple dimensions<br>
+            ✔ Different methods may identify different outliers, so using multiple approaches is recommended</p>
+        </div>
+        
+        <hr>
+        
+        <h3>Step 5: Handling Outliers in Analysis</h3>
+        <div class="r-code">
+            <code>
+# Method 1: Remove outliers
+data_without_outliers <- malaria_districts %>%
+  filter(!cases_outlier)
+
+# Compare statistics with and without outliers
+summary_stats <- data.frame(
+  metric = c("Mean Cases", "Median Cases", "SD Cases", "Min Cases", "Max Cases"),
+  with_outliers = c(
+    mean(malaria_districts$cases),
+    median(malaria_districts$cases),
+    sd(malaria_districts$cases),
+    min(malaria_districts$cases),
+    max(malaria_districts$cases)
+  ),
+  without_outliers = c(
+    mean(data_without_outliers$cases),
+    median(data_without_outliers$cases),
+    sd(data_without_outliers$cases),
+    min(data_without_outliers$cases),
+    max(data_without_outliers$cases)
+  )
+)
+
+print(summary_stats)
+
+# Method 2: Cap outliers (winsorization)
+cap_outliers <- function(x, lower_percentile = 0.05, upper_percentile = 0.95) {
+  lower_cap <- quantile(x, lower_percentile)
+  upper_cap <- quantile(x, upper_percentile)
+  return(pmin(pmax(x, lower_cap), upper_cap))
+}
+
+malaria_districts$cases_capped <- cap_outliers(malaria_districts$cases, 0, 0.95)
+
+# Method 3: Transform data to reduce skewness
+malaria_districts$cases_log <- log(malaria_districts$cases)
+
+# Compare original and transformed distributions
+par(mfrow = c(1, 3))
+hist(malaria_districts$cases, main = "Original Cases", xlab = "Cases")
+hist(malaria_districts$cases_capped, main = "Capped Cases", xlab = "Cases")
+hist(malaria_districts$cases_log, main = "Log-transformed Cases", xlab = "Log(Cases)")
+            </code>
+        </div>
+        
+        <div class="explanation">
+            <h4>🔍 Explanation:</h4>
+            <p>✔ There are multiple strategies for handling outliers:<br>
+            1. Remove outliers if they represent errors or special cases<br>
+            2. Cap outliers at certain percentiles (winsorization)<br>
+            3. Transform data (e.g., log transformation) to reduce the impact of extreme values<br>
+            ✔ The appropriate strategy depends on the nature of outliers and analysis goals<br>
+            ✔ Always document your outlier handling approach for transparency</p>
+        </div>
+        
+        <hr>
+        
+        <h2>✅ Summary of Week 5</h2>
+        <p>By the end of this week, you should be able to:<br>
+        ✔ <strong>Transform data</strong> between wide and long formats using pivot functions<br>
+        ✔ <strong>Combine multiple datasets</strong> using different join methods<br>
+        ✔ <strong>Identify and handle outliers</strong> using visual and statistical methods<br>
+        ✔ <strong>Create advanced visualizations</strong> that highlight patterns in the data</p>
+        
+        <hr>
+        
+        <h1 id="exercises5">📌 Week 5: Exercises – Data Reshaping & Advanced EDA</h1>
+        
+        <p>These exercises will help you practice reshaping data, joining datasets, and detecting outliers in malaria data.</p>
+        
+        <hr>
+        
+        <div class="exercise-section">
+            <h2 id="ex-pivoting">1️⃣ Data Pivoting</h2>
+            
+            <h3>Exercise 1.1: Basic Pivoting</h3>
+            <p>🔹 <strong>Using the <code>malaria_monthly</code> dataset, complete the following tasks:</strong></p>
+            
+            <p><strong>Write the R code to:</strong></p>
+            <ol>
+                <li>Transform the data from wide format (monthly columns) to long format.</li>
+                <li>Create a line plot showing the trend of malaria cases over months for each region.</li>
+                <li>Calculate the average monthly cases for each region and rank them.</li>
+                <li>Transform the long data back to wide format, but with regions as columns and months as rows.</li>
+            </ol>
+            
+            <hr>
+            
+            <h3>Exercise 1.2: Advanced Pivoting</h3>
+            <p>🔹 <strong>Use pivoting functions to manipulate and analyze demographic malaria data.</strong></p>
+            
+            <p><strong>Write the R code to:</strong></p>
+            <ol>
+                <li>Reshape age-specific incidence data from wide format (age groups as columns) to long format.</li>
+                <li>Create a heatmap showing incidence rates by age group and gender.</li>
+                <li>Transform prevalence data to calculate age group to age group ratios.</li>
+                <li>Create a summary table with total cases by region and percentage of cases by age group.</li>
+            </ol>
+            
+            <hr>
+            
+            <h3>Exercise 1.3: Pivoting with Time Series Data</h3>
+            <p>🔹 <strong>Apply pivoting to analyze temporal patterns in malaria cases.</strong></p>
+            
+            <p><strong>Write the R code to:</strong></p>
+            <ol>
+                <li>Convert monthly time series data to a year-month matrix for easy comparison across years.</li>
+                <li>Calculate year-over-year percentage changes for each month.</li>
+                <li>Create a visualization showing seasonal patterns across different years.</li>
+                <li>Identify the months with the highest and lowest year-over-year changes.</li>
+            </ol>
+            
+        </div>
+        
+        <div class="exercise-section">
+            <h2 id="ex-joins">2️⃣ Data Joining & Merging</h2>
+            
+            <h3>Exercise 2.1: Basic Joins</h3>
+            <p>🔹 <strong>Practice combining malaria case data with demographic information.</strong></p>
+            
+            <p><strong>Write the R code to:</strong></p>
+            <ol>
+                <li>Join the malaria case dataset with a population dataset using district ID as the key.</li>
+                <li>Compare the number of records before and after the join.</li>
+                <li>Identify districts that are present in one dataset but not the other.</li>
+                <li>Calculate incidence rates using the combined dataset.</li>
+            </ol>
+            
+            <hr>
+            
+            <h3>Exercise 2.2: Multiple Joins</h3>
+            <p>🔹 <strong>Combine multiple datasets for comprehensive malaria analysis.</strong></p>
+            
+            <p><strong>Write the R code to:</strong></p>
+            <ol>
+                <li>Join malaria case data with intervention data and environmental factors.</li>
+                <li>Create a correlation matrix among all variables in the combined dataset.</li>
+                <li>Build a scatter plot matrix of key variables to visualize relationships.</li>
+                <li>Identify the top 3 factors most strongly correlated with malaria incidence.</li>
+            </ol>
+            
+            <hr>
+            
+            <h3>Exercise 2.3: Advanced Join Applications</h3>
+            <p>🔹 <strong>Apply joins for complex malaria data analysis scenarios.</strong></p>
+            
+            <p><strong>Write the R code to:</strong></p>
+            <ol>
+                <li>Join longitudinal case data with intervention roll-out dates to analyze before-after effects.</li>
+                <li>Compare incidence rates between regions with and without specific interventions.</li>
+                <li>Create a visualization showing the relationship between intervention coverage and incidence changes.</li>
+                <li>Generate a report table of regions that need additional interventions based on high incidence and low coverage.</li>
+            </ol>
+            
+        </div>
+        
+        <div class="exercise-section">
+            <h2 id="ex-outliers">3️⃣ Outlier Detection</h2>
+            
+            <h3>Exercise 3.1: Visual Outlier Detection</h3>
+            <p>🔹 <strong>Use visualization techniques to identify outliers in malaria data.</strong></p>
+            
+            <p><strong>Write the R code to:</strong></p>
+            <ol>
+                <li>Create boxplots of malaria incidence rates by region to identify regions with unusual values.</li>
+                <li>Generate a scatter plot of cases vs. population with outliers highlighted.</li>
+                <li>Create a time series plot of monthly cases highlighting months with unusually high or low values.</li>
+                <li>Compare different visualization methods and discuss which is most effective for outlier detection.</li>
+            </ol>
+            
+            <hr>
+            
+            <h3>Exercise 3.2: Statistical Outlier Detection</h3>
+            <p>🔹 <strong>Apply statistical methods to detect outliers in malaria datasets.</strong></p>
+            
+            <p><strong>Write the R code to:</strong></p>
+            <ol>
+                <li>Use the IQR method to identify outliers in incidence rates across districts.</li>
+                <li>Calculate z-scores and flag observations with values beyond ±2.5 standard deviations.</li>
+                <li>Apply the DBSCAN clustering algorithm to detect multivariate outliers.</li>
+                <li>Compare results from different methods and identify consistently flagged outliers.</li>
+            </ol>
+            
+            <hr>
+            
+            <h3>Exercise 3.3: Handling Outliers</h3>
+            <p>🔹 <strong>Implement different strategies for dealing with outliers in your analysis.</strong></p>
+            
+            <p><strong>Write the R code to:</strong></p>
+            <ol>
+                <li>Remove outliers and compare summary statistics before and after removal.</li>
+                <li>Apply winsorization to cap extreme values at specific percentiles.</li>
+                <li>Transform the data using log transformation and compare the distributions.</li>
+                <li>Build a regression model predicting incidence using different outlier handling methods and compare results.</li>
+            </ol>
+            
+        </div>
+        
+        <hr>
+        
+        <h1 id="solutions5">📌 Week 5: Solutions – Data Reshaping & Advanced EDA</h1>
+        
+        <p>Here are the <strong>solutions</strong> for Week 5 exercises:</p>
+        
+        <hr>
+        
+        <div class="solution-section">
+            <h2 id="sol-pivoting">1️⃣ Data Pivoting</h2>
+            
+            <h3>Exercise 1.1: Basic Pivoting</h3>
+            <div class="r-code">
+                <code>
+# Load required packages
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+
+# Load the dataset
+malaria_monthly <- data.frame(
+  region = c("Central", "North", "South", "East", "West"),
+  Jan = c(245, 189, 324, 176, 221),
+  Feb = c(231, 192, 298, 153, 187),
+  Mar = c(264, 205, 310, 162, 192),
+  Apr = c(312, 227, 346, 185, 219),
+  May = c(356, 251, 372, 203, 247),
+  Jun = c(389, 274, 412, 231, 276)
+)
+
+# 1. Transform from wide to long format
+malaria_long <- malaria_monthly %>%
+  pivot_longer(
+    cols = Jan:Jun,
+    names_to = "month",
+    values_to = "cases"
+  )
+
+# Convert month to factor to preserve order
+malaria_long$month <- factor(malaria_long$month, 
+                             levels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun"))
+
+print(malaria_long)
+
+# 2. Create a line plot showing trends by region
+ggplot(malaria_long, aes(x = month, y = cases, color = region, group = region)) +
+  geom_line(size = 1) +
+  geom_point(size = 2) +
+  labs(
+    title = "Monthly Malaria Cases by Region",
+    x = "Month",
+    y = "Number of Cases",
+    color = "Region"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "right")
+
+# 3. Calculate average monthly cases and rank regions
+region_avg_cases <- malaria_long %>%
+  group_by(region) %>%
+  summarise(avg_cases = mean(cases)) %>%
+  arrange(desc(avg_cases))
+
+print(region_avg_cases)
+
+# 4. Transform back to wide format with regions as columns
+month_region_wide <- malaria_long %>%
+  pivot_wider(
+    names_from = region,
+    values_from = cases
+  )
+
+print(month_region_wide)
+                </code>
+            </div>
+            
+            <div class="explanation">
+                <h4>Explanation:</h4>
+                <p>- <code>pivot_longer()</code> transforms data from wide to long format, creating a row for each region-month combination.<br>
+                - Converting month to a factor preserves the chronological order in visualizations.<br>
+                - <code>group_by()</code> and <code>summarise()</code> calculate the average cases per region.<br>
+                - <code>pivot_wider()</code> transforms the data back to wide format but with a different structure.</p>
+            </div>
+            
+            <hr>
+            
+            <h3>Exercise 1.2: Advanced Pivoting</h3>
+            <div class="r-code">
+                <code>
+# Create age-specific incidence data (wide format)
+age_incidence_wide <- data.frame(
+  region = c("Central", "North", "South", "East", "West"),
+  under5 = c(23.5, 28.7, 31.2, 19.8, 25.4),
+  age5_14 = c(18.7, 22.3, 24.1, 15.6, 19.8),
+  age15_49 = c(12.4, 15.6, 17.8, 10.2, 13.5),
+  age50plus = c(8.3, 10.2, 12.5, 7.1, 9.4),
+  gender_ratio = c(1.2, 1.3, 1.1, 1.4, 1.2)  # Male:Female ratio
+)
+
+# 1. Reshape from wide to long format
+age_incidence_long <- age_incidence_wide %>%
+  pivot_longer(
+    cols = c(under5, age5_14, age15_49, age50plus),
+    names_to = "age_group",
+    values_to = "incidence"
+  )
+
+print(age_incidence_long)
+
+# Create gender-specific data for each age group
+# First, we'll calculate male and female incidence based on the gender ratio
+age_gender_incidence <- age_incidence_long %>%
+  mutate(
+    gender_ratio = rep(age_incidence_wide$gender_ratio, each = 4),
+    male_incidence = incidence * (gender_ratio / (1 + gender_ratio)) * 2,
+    female_incidence = incidence * (1 / (1 + gender_ratio)) * 2
+  ) %>%
+  select(region, age_group, male_incidence, female_incidence)
+
+# Convert to longer format with gender as a variable
+age_gender_long <- age_gender_incidence %>%
+  pivot_longer(
+    cols = c(male_incidence, female_incidence),
+    names_to = "gender",
+    values_to = "incidence"
+  ) %>%
+  mutate(gender = gsub("_incidence", "", gender))
+
+# 2. Create a heatmap of incidence by age group and gender
+ggplot(age_gender_long, aes(x = age_group, y = region, fill = incidence)) +
+  geom_tile() +
+  facet_wrap(~gender) +
+  scale_fill_gradient(low = "white", high = "red") +
+  labs(
+    title = "Malaria Incidence Rates by Age Group, Gender, and Region",
+    x = "Age Group",
+    y = "Region",
+    fill = "Incidence\nper 1000"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+# 3. Transform to calculate age group ratios
+age_group_ratios <- age_incidence_wide %>%
+  mutate(
+    child_adult_ratio = under5 / age15_49,
+    youth_elder_ratio = age5_14 / age50plus
+  ) %>%
+  select(region, child_adult_ratio, youth_elder_ratio)
+
+print(age_group_ratios)
+
+# 4. Create summary table with total cases and percentage by age group
+# Assuming we have population data to convert incidence to cases
+region_populations <- data.frame(
+  region = c("Central", "North", "South", "East", "West"),
+  population = c(1250000, 980000, 1450000, 820000, 950000),
+  under5_pop_pct = c(0.15, 0.17, 0.16, 0.14, 0.15),
+  age5_14_pop_pct = c(0.22, 0.24, 0.23, 0.21, 0.22),
+  age15_49_pop_pct = c(0.45, 0.42, 0.43, 0.46, 0.44),
+  age50plus_pop_pct = c(0.18, 0.17, 0.18, 0.19, 0.19)
+)
+
+# Calculate total cases and cases by age group
+total_cases_by_age <- age_incidence_long %>%
+  left_join(region_populations, by = "region") %>%
+  mutate(
+    age_pop_pct = case_when(
+      age_group == "under5" ~ under5_pop_pct,
+      age_group == "age5_14" ~ age5_14_pop_pct,
+      age_group == "age15_49" ~ age15_49_pop_pct,
+      age_group == "age50plus" ~ age50plus_pop_pct
+    ),
+    population_in_age_group = population * age_pop_pct,
+    cases = (incidence * population_in_age_group) / 1000
+  ) %>%
+  group_by(region, age_group) %>%
+  summarise(
+    age_group_cases = sum(cases),
+    .groups = "drop"
+  ) %>%
+  group_by(region) %>%
+  mutate(total_region_cases = sum(age_group_cases),
+         percentage = (age_group_cases / total_region_cases) * 100) %>%
+  arrange(region, desc(percentage))
+
+print(total_cases_by_age)
+
+# Create a pivot table summary
+summary_table <- total_cases_by_age %>%
+  pivot_wider(
+    id_cols = region,
+    names_from = age_group,
+    values_from = c(age_group_cases, percentage)
+  ) %>%
+  mutate(total_cases = total_region_cases) %>%
+  select(region, total_cases, contains("percentage"))
+
+print(summary_table)
+                </code>
+            </div>
+            
+            <div class="explanation">
+                <h4>Explanation:</h4>
+                <p>- We reshape age-specific incidence data from wide to long format for analysis.<br>
+                - We calculate gender-specific incidence using the gender ratio and create a heatmap visualization.<br>
+                - Age group ratios are calculated to compare vulnerability across different age groups.<br>
+                - We join with population data to convert incidence rates to case counts and summarize by age group.</p>
+            </div>
+            
+            <hr>
+            
+            <h3>Exercise 1.3: Pivoting with Time Series Data</h3>
+            <div class="r-code">
+                <code>
+# Create multi-year monthly malaria data
+years <- 2020:2022
+months <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+           "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+
+# Generate synthetic data
+set.seed(123)
+monthly_data <- expand.grid(year = years, month = months)
+monthly_data$cases <- round(runif(nrow(monthly_data), 150, 500) * 
+                           (1 + 0.3 * sin((match(monthly_data$month, months) - 1) * pi/6)))
+
+# Add some trend
+monthly_data$cases <- monthly_data$cases + 
+  (monthly_data$year - min(monthly_data$year)) * 20
+
+# Ensure month factor is ordered correctly
+monthly_data$month <- factor(monthly_data$month, levels = months)
+
+# 1. Convert to year-month matrix
+year_month_matrix <- monthly_data %>%
+  pivot_wider(
+    names_from = month,
+    values_from = cases,
+    id_cols = year
+  )
+
+print(year_month_matrix)
+
+# 2. Calculate year-over-year percentage changes
+# First, convert back to long format for easier calculations
+monthly_long <- year_month_matrix %>%
+  pivot_longer(
+    cols = all_of(months),
+    names_to = "month",
+    values_to = "cases"
+  ) %>%
+  arrange(month, year)
+
+# Calculate YoY changes
+yoy_changes <- monthly_long %>%
+  group_by(month) %>%
+  arrange(month, year) %>%
+  mutate(
+    prev_year_cases = lag(cases),
+    yoy_change_pct = ((cases - prev_year_cases) / prev_year_cases) * 100
+  ) %>%
+  filter(!is.na(yoy_change_pct)) %>%
+  select(year, month, cases, prev_year_cases, yoy_change_pct)
+
+print(yoy_changes)
+
+# 3. Create visualization of seasonal patterns
+# Calculate average cases by month across years
+seasonal_pattern <- monthly_long %>%
+  group_by(month) %>%
+  summarise(
+    avg_cases = mean(cases),
+    .groups = "drop"
+  )
+
+# Plot seasonal pattern
+ggplot() +
+  geom_line(data = monthly_long, 
+           aes(x = month, y = cases, group = year, color = as.factor(year)), 
+           alpha = 0.7) +
+  geom_line(data = seasonal_pattern,
+           aes(x = month, y = avg_cases, group = 1),
+           color = "black", size = 1.5) +
+  geom_point(data = seasonal_pattern,
+            aes(x = month, y = avg_cases),
+            color = "black", size = 3) +
+  labs(
+    title = "Seasonal Pattern of Malaria Cases (2020-2022)",
+    subtitle = "Individual years and average pattern",
+    x = "Month",
+    y = "Number of Cases",
+    color = "Year"
+  ) +
+  theme_minimal()
+
+# 4. Identify months with highest and lowest YoY changes
+extreme_changes <- yoy_changes %>%
+  group_by(year) %>%
+  summarise(
+    highest_increase_month = month[which.max(yoy_change_pct)],
+    highest_increase_pct = max(yoy_change_pct),
+    highest_decrease_month = month[which.min(yoy_change_pct)],
+    highest_decrease_pct = min(yoy_change_pct),
+    .groups = "drop"
+  )
+
+print(extreme_changes)
+
+# Visualize YoY changes
+ggplot(yoy_changes, aes(x = month, y = yoy_change_pct, fill = as.factor(year))) +
+  geom_col(position = "dodge") +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "darkgray") +
+  labs(
+    title = "Year-over-Year Percentage Changes in Malaria Cases",
+    x = "Month",
+    y = "% Change from Previous Year",
+    fill = "Year"
+  ) +
+  theme_minimal()
+                </code>
+            </div>
+            
+            <div class="explanation">
+                <h4>Explanation:</h4>
+                <p>- We create a year-month matrix for comparing monthly cases across different years.<br>
+                - Year-over-year percentage changes are calculated to identify growth or reduction trends.<br>
+                - We visualize seasonal patterns by plotting individual years and the average pattern.<br>
+                - We identify and visualize months with extreme (highest/lowest) year-over-year changes.</p>
+            </div>
+        </div>
+        
+        <div class="solution-section">
+            <h2 id="sol-joins">2️⃣ Data Joining & Merging</h2>
+            
+            <h3>Exercise 2.1: Basic Joins</h3>
+            <div class="r-code">
+                <code>
+# Create example datasets
+# Malaria case data
+malaria_cases <- data.frame(
+  district_id = c(101, 102, 103, 104, 105, 106, 107),
+  district_name = c("Metropolis", "Riverside", "Highland", "Lakeside", "Mountain", "Valley", "Plains"),
+  cases = c(423, 251, 387, 142, 195, 326, 271)
+)
+
+# Population data
+population_data <- data.frame(
+  district_id = c(101, 102, 103, 105, 106, 107, 108),
+  population = c(54200, 32500, 41800, 23700, 36500, 29400, 18700),
+  urban_pct = c(78, 45, 32, 12, 28, 35, 22)
+)
+
+# 1. Join malaria case data with population data
+# Using left join to keep all districts in the case data
+joined_data <- malaria_cases %>%
+  left_join(population_data, by = "district_id")
+
+print(joined_data)
+
+# 2. Compare record counts
+case_count <- nrow(malaria_cases)
+pop_count <- nrow(population_data)
+joined_count <- nrow(joined_data)
+
+cat("Number of records in case data:", case_count, "\n")
+cat("Number of records in population data:", pop_count, "\n")
+cat("Number of records in joined data:", joined_count, "\n")
+
+# 3. Identify districts in one dataset but not the other
+# Districts in case data but not in population data
+cases_only <- malaria_cases %>%
+  anti_join(population_data, by = "district_id")
+
+# Districts in population data but not in case data
+pop_only <- population_data %>%
+  anti_join(malaria_cases, by = "district_id")
+
+cat("\nDistricts in case data but not in population data:\n")
+print(cases_only)
+
+cat("\nDistricts in population data but not in case data:\n")
+print(pop_only)
+
+# 4. Calculate incidence rates
+incidence_data <- joined_data %>%
+  mutate(
+    incidence_per_1000 = ifelse(!is.na(population), (cases / population) * 1000, NA),
+    data_status = ifelse(is.na(population), "Missing Population", "Complete")
+  ) %>%
+  arrange(desc(incidence_per_1000))
+
+print(incidence_data)
+
+# Visualize incidence rates
+ggplot(incidence_data %>% filter(!is.na(incidence_per_1000)), 
+       aes(x = reorder(district_name, incidence_per_1000), y = incidence_per_1000)) +
+  geom_col(aes(fill = urban_pct), color = "black") +
+  scale_fill_gradient(low = "lightgreen", high = "darkgreen") +
+  labs(
+    title = "Malaria Incidence Rates by District",
+    subtitle = "Color indicates urban percentage",
+    x = "District",
+    y = "Incidence per 1000 Population",
+    fill = "Urban %"
+  ) +
+  theme_minimal() +
+  coord_flip()
+                </code>
+            </div>
+            
+            <div class="explanation">
+                <h4>Explanation:</h4>
+                <p>- We join malaria case data with population data using <code>left_join()</code>.<br>
+                - <code>anti_join()</code> helps identify districts that exist in one dataset but not the other.<br>
+                - District 104 has missing population data, while district 108 has population data but no case data.<br>
+                - Incidence rates are calculated by dividing cases by population and multiplying by 1000.</p>
+            </div>
+            
+            <hr>
+            
+            <h3>Exercise 2.2: Multiple Joins</h3>
+            <div class="r-code">
+                <code>
+# Create additional datasets
+# Intervention data
+interventions <- data.frame(
+  district_id = c(101, 102, 103, 105, 106, 108),
+  itn_coverage = c(76, 54, 82, 63, 48, 58),  # Insecticide-treated net coverage (%)
+  irs_coverage = c(45, 32, 68, 41, 30, 38),  # Indoor residual spraying coverage (%)
+  treatment_centers = c(8, 5, 7, 3, 4, 4)    # Number of treatment centers
+)
+
+# Environmental factors
+environmental <- data.frame(
+  district_id = c(101, 102, 103, 104, 105, 107, 108),
+  annual_rainfall = c(1240, 980, 1450, 1100, 1680, 1050, 890),  # mm
+  avg_temperature = c(24.8, 26.3, 22.1, 25.7, 20.6, 25.2, 27.2), # °C
+  elevation = c(320, 180, 850, 210, 1200, 250, 150)             # meters
+)
+
+# 1. Join all three datasets
+# Start with the left join from previous exercise and add environmental data
+complete_data <- joined_data %>%
+  left_join(interventions, by = "district_id") %>%
+  left_join(environmental, by = "district_id")
+
+print(complete_data)
+
+# Calculate incidence for analysis
+analysis_data <- complete_data %>%
+  mutate(
+    incidence_per_1000 = ifelse(!is.na(population), (cases / population) * 1000, NA)
+  ) %>%
+  filter(!is.na(incidence_per_1000))  # Remove records with missing incidence
+
+# 2. Create correlation matrix
+# Select only numeric variables for correlation
+numeric_vars <- analysis_data %>%
+  select(cases, population, urban_pct, itn_coverage, irs_coverage, 
+         treatment_centers, annual_rainfall, avg_temperature, elevation, incidence_per_1000)
+
+# Calculate correlation matrix
+cor_matrix <- cor(numeric_vars, use = "pairwise.complete.obs")
+print(round(cor_matrix, 2))
+
+# 3. Create scatterplot matrix of key variables
+# Using GGally package for scatterplot matrix (install if needed)
+if (!require("GGally")) {
+  install.packages("GGally")
+  library(GGally)
+}
+
+# Select key variables
+key_vars <- analysis_data %>%
+  select(incidence_per_1000, itn_coverage, irs_coverage, 
+         annual_rainfall, avg_temperature, elevation)
+
+ggpairs(key_vars)
+
+# 4. Identify top 3 factors correlated with incidence
+incidence_correlations <- cor_matrix["incidence_per_1000", ]
+# Remove self-correlation
+incidence_correlations <- incidence_correlations[names(incidence_correlations) != "incidence_per_1000"]
+# Sort by absolute value (ignoring direction)
+top_correlations <- sort(abs(incidence_correlations), decreasing = TRUE)[1:3]
+
+cat("Top 3 factors correlated with malaria incidence:\n")
+for (i in 1:3) {
+  var_name <- names(top_correlations)[i]
+  cor_value <- cor_matrix["incidence_per_1000", var_name]
+  direction <- ifelse(cor_value > 0, "positive", "negative")
+  cat(i, ". ", var_name, " (", direction, " correlation: ", round(cor_value, 2), ")\n", sep = "")
+}
+                </code>
+            </div>
+            
+            <div class="explanation">
+                <h4>Explanation:</h4>
+                <p>- We combine three datasets using multiple <code>left_join()</code> operations.<br>
+                - The correlation matrix helps identify relationships between variables.<br>
+                - <code>ggpairs()</code> creates a matrix of scatterplots to visualize relationships between key variables.<br>
+                - We identify the top factors most strongly correlated with malaria incidence (in either positive or negative direction).</p>
+            </div>
+            
+            <hr>
+            
+            <h3>Exercise 2.3: Advanced Join Applications</h3>
+            <div class="r-code">
+                <code>
+# Create longitudinal case data
+case_time_series <- data.frame(
+  district_id = rep(c(101, 102, 103, 104, 105), each = 8),
+  year = rep(2016:2023, times = 5),
+  cases = round(runif(40, 100, 500))
+)
+
+# Add population data for incidence calculation
+case_time_series <- case_time_series %>%
+  left_join(
+    population_data %>% select(district_id, population),
+    by = "district_id"
+  ) %>%
+  mutate(incidence_per_1000 = (cases / population) * 1000)
+
+# Create intervention rollout data
+intervention_rollout <- data.frame(
+  district_id = c(101, 102, 103, 104, 105),
+  intervention_name = c("Enhanced ITN", "Enhanced ITN", "IRS Campaign", 
+                        "Enhanced ITN", "IRS Campaign"),
+  start_year = c(2018, 2020, 2019, 2021, 2019),
+  coverage_at_start = c(30, 25, 35, 20, 40),
+  coverage_after_3yr = c(80, 75, 85, 70, 90)
+)
+
+print(intervention_rollout)
+
+# 1. Join longitudinal data with intervention rollout
+intervention_analysis <- case_time_series %>%
+  left_join(intervention_rollout, by = "district_id") %>%
+  mutate(
+    time_period = case_when(
+      year < start_year ~ "Before",
+      year >= start_year & year <= start_year + 2 ~ "Transition",
+      year > start_year + 2 ~ "After"
+    ),
+    # Interpolate coverage for each year
+    estimated_coverage = case_when(
+      year < start_year ~ coverage_at_start,
+      year > start_year + 3 ~ coverage_after_3yr,
+      TRUE ~ coverage_at_start + (coverage_after_3yr - coverage_at_start) * 
+        (year - start_year) / 3
+    )
+  )
+
+# 2. Compare incidence rates before and after intervention
+before_after_summary <- intervention_analysis %>%
+  filter(time_period %in% c("Before", "After")) %>%
+  group_by(district_id, district_name = paste0("District ", district_id), 
+          intervention_name, time_period) %>%
+  summarise(
+    avg_incidence = mean(incidence_per_1000, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  pivot_wider(
+    names_from = time_period,
+    values_from = avg_incidence
+  ) %>%
+  mutate(
+    change = After - Before,
+    pct_change = (change / Before) * 100
+  ) %>%
+  arrange(desc(pct_change))
+
+print(before_after_summary)
+
+# 3. Visualize relationship between coverage and incidence changes
+ggplot(intervention_analysis, aes(x = estimated_coverage, y = incidence_per_1000, 
+                                 color = time_period)) +
+  geom_point(alpha = 0.7) +
+  geom_smooth(method = "lm", se = FALSE) +
+  facet_wrap(~intervention_name) +
+  labs(
+    title = "Relationship Between Intervention Coverage and Malaria Incidence",
+    x = "Estimated Coverage (%)",
+    y = "Incidence per 1000 Population",
+    color = "Time Period"
+  ) +
+  theme_minimal()
+
+# 4. Generate report table of regions needing additional interventions
+# Calculate average incidence in the last two years
+recent_performance <- intervention_analysis %>%
+  filter(year >= 2022) %>%
+  group_by(district_id, district_name = paste0("District ", district_id), 
+          intervention_name) %>%
+  summarise(
+    recent_incidence = mean(incidence_per_1000),
+    recent_coverage = mean(estimated_coverage),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    coverage_status = case_when(
+      recent_coverage >= 80 ~ "High",
+      recent_coverage >= 60 ~ "Medium",
+      TRUE ~ "Low"
+    ),
+    incidence_status = case_when(
+      recent_incidence <= 5 ~ "Low",
+      recent_incidence <= 10 ~ "Medium",
+      TRUE ~ "High"
+    ),
+    priority_score = case_when(
+      incidence_status == "High" & coverage_status == "Low" ~ 3,
+      incidence_status == "High" & coverage_status == "Medium" ~ 2,
+      incidence_status == "Medium" & coverage_status == "Low" ~ 2,
+      TRUE ~ 1
+    ),
+    recommendation = case_when(
+      priority_score == 3 ~ "Urgent intervention scale-up needed",
+      priority_score == 2 ~ "Targeted intervention reinforcement",
+      TRUE ~ "Maintain current strategy"
+    )
+  ) %>%
+  arrange(desc(priority_score), desc(recent_incidence))
+
+print(recent_performance)
+                </code>
+            </div>
+            
+            <div class="explanation">
+                <h4>Explanation:</h4>
+                <p>- We join longitudinal case data with intervention rollout information to analyze before-after effects.<br>
+                - We classify time periods as "Before," "Transition," or "After" relative to intervention start.<br>
+                - We interpolate coverage percentages for each year based on start and 3-year values.<br>
+                - The priority score identifies districts that need additional interventions based on high incidence and low coverage.</p>
+            </div>
+        </div>
+        
+        <div class="solution-section">
+            <h2 id="sol-outliers">3️⃣ Outlier Detection</h2>
+            
+            <h3>Exercise 3.1: Visual Outlier Detection</h3>
+            <div class="r-code">
+                <code>
+# Create example dataset with outliers
+set.seed(123)
+district_data <- data.frame(
+  district_id = 1:40,
+  district_name = paste0("District_", 1:40),
+  population = round(runif(40, 15000, 50000)),
+  cases = round(runif(40, 100, 500))
+)
+
+# Add some outliers
+district_data$cases[5] = 1250  # Extreme high value
+district_data$cases[12] = 980  # High value
+district_data$cases[28] = 35   # Low value
+
+# Calculate incidence
+district_data$incidence_per_1000 <- (district_data$cases / district_data$population) * 1000
+
+# 1. Create boxplots of incidence rates
+ggplot(district_data, aes(y = incidence_per_1000)) +
+  geom_boxplot(fill = "lightblue") +
+  labs(
+    title = "Distribution of Malaria Incidence Rates",
+    subtitle = "Boxplot showing potential outliers",
+    y = "Incidence per 1000 Population"
+  ) +
+  theme_minimal()
+
+# Add region information for grouped boxplots
+district_data$region <- rep(c("North", "South", "East", "West", "Central"), each = 8)
+
+# Boxplot by region
+ggplot(district_data, aes(x = region, y = incidence_per_1000, fill = region)) +
+  geom_boxplot() +
+  labs(
+    title = "Distribution of Malaria Incidence Rates by Region",
+    x = "Region",
+    y = "Incidence per 1000 Population"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+# 2. Generate scatter plot of cases vs. population
+ggplot(district_data, aes(x = population, y = cases)) +
+  geom_point(aes(color = incidence_per_1000), size = 3, alpha = 0.7) +
+  geom_smooth(method = "lm", se = FALSE, color = "darkgray", linetype = "dashed") +
+  scale_color_gradient(low = "blue", high = "red") +
+  labs(
+    title = "Malaria Cases vs. Population",
+    subtitle = "Color indicates incidence rate (outliers appear in red)",
+    x = "Population",
+    y = "Number of Cases",
+    color = "Incidence\nper 1000"
+  ) +
+  theme_minimal()
+
+# 3. Create time series data with monthly cases
+set.seed(123)
+monthly_cases <- data.frame(
+  month = 1:36,
+  date = seq(as.Date("2020-01-01"), as.Date("2022-12-01"), by = "month"),
+  cases = round(runif(36, 150, 300) * (1 + 0.3 * sin((1:36 - 1) * pi/6)))
+)
+
+# Add outliers
+monthly_cases$cases[10] = 650  # Outbreak
+monthly_cases$cases[22] = 80   # Unusually low
+monthly_cases$cases[30] = 550  # Another high value
+
+# Calculate z-scores for coloring
+monthly_cases$z_score <- (monthly_cases$cases - mean(monthly_cases$cases)) / sd(monthly_cases$cases)
+monthly_cases$is_outlier <- abs(monthly_cases$z_score) > 2
+
+# Time series plot highlighting outliers
+ggplot(monthly_cases, aes(x = date, y = cases)) +
+  geom_line(color = "gray40") +
+  geom_point(aes(color = is_outlier, size = abs(z_score)), alpha = 0.7) +
+  scale_color_manual(values = c("blue", "red"), 
+                     labels = c("Normal", "Outlier")) +
+  scale_size_continuous(range = c(2, 5)) +
+  labs(
+    title = "Monthly Malaria Cases (2020-2022)",
+    subtitle = "Outliers highlighted in red",
+    x = "Date",
+    y = "Number of Cases",
+    color = "Status",
+    size = "|Z-score|"
+  ) +
+  theme_minimal()
+
+# 4. Compare methods - identify outliers with each approach
+# Add IQR-based outlier detection
+q1 <- quantile(district_data$incidence_per_1000, 0.25)
+q3 <- quantile(district_data$incidence_per_1000, 0.75)
+iqr <- q3 - q1
+lower_bound <- q1 - 1.5 * iqr
+upper_bound <- q3 + 1.5 * iqr
+
+district_data$iqr_outlier <- district_data$incidence_per_1000 < lower_bound | 
+                            district_data$incidence_per_1000 > upper_bound
+
+# Z-score based outlier detection
+district_data$z_score <- (district_data$incidence_per_1000 - mean(district_data$incidence_per_1000)) / 
+                        sd(district_data$incidence_per_1000)
+district_data$z_outlier <- abs(district_data$z_score) > 2
+
+# Compare methods
+district_data %>%
+  select(district_id, district_name, incidence_per_1000, iqr_outlier, z_outlier) %>%
+  filter(iqr_outlier | z_outlier) %>%
+  arrange(desc(incidence_per_1000))
+                </code>
+            </div>
+            
+            <div class="explanation">
+                <h4>Explanation:</h4>
+                <p>- Boxplots provide a visual way to identify outliers based on the interquartile range.<br>
+                - Scatter plots help identify unusual relationships between variables (e.g., very high cases in small populations).<br>
+                - Time series plots can highlight temporal outliers like outbreaks or reporting errors.<br>
+                - Different methods may identify different outliers, with overlap between methods suggesting stronger evidence of anomalies.</p>
+            </div>
+            
+            <hr>
+            
+            <h3>Exercise 3.2: Statistical Outlier Detection</h3>
+            <div class="r-code">
+                <code>
+# Continue with the district data from previous exercise
+
+# 1. Use IQR method for outlier detection
+iqr_outliers <- function(x, multiplier = 1.5) {
+  q1 <- quantile(x, 0.25)
+  q3 <- quantile(x, 0.75)
+  iqr <- q3 - q1
+  lower_bound <- q1 - multiplier * iqr
+  upper_bound <- q3 + multiplier * iqr
+  
+  # Return dataframe with bounds and outlier status
+  data.frame(
+    lower_bound = lower_bound,
+    upper_bound = upper_bound,
+    is_outlier = x < lower_bound | x > upper_bound
+  )
+}
+
+incidence_iqr <- iqr_outliers(district_data$incidence_per_1000)
+district_data$iqr_outlier <- incidence_iqr$is_outlier
+
+cat("IQR Method Results:\n")
+cat("Lower bound:", round(incidence_iqr$lower_bound, 2), "\n")
+cat("Upper bound:", round(incidence_iqr$upper_bound, 2), "\n")
+cat("Number of outliers:", sum(incidence_iqr$is_outlier), "\n\n")
+
+# 2. Z-score method with 2.5 SD threshold
+z_score_outliers <- function(x, threshold = 2.5) {
+  z_scores <- (x - mean(x)) / sd(x)
+  is_outlier <- abs(z_scores) > threshold
+  
+  # Return dataframe with z-scores and outlier status
+  data.frame(
+    z_score = z_scores,
+    is_outlier = is_outlier
+  )
+}
+
+incidence_z <- z_score_outliers(district_data$incidence_per_1000, 2.5)
+district_data$z_outlier <- incidence_z$is_outlier
+
+cat("Z-score Method Results (threshold = 2.5):\n")
+cat("Number of outliers:", sum(incidence_z$is_outlier), "\n\n")
+
+# 3. DBSCAN clustering for multivariate outlier detection
+if (!require("dbscan")) {
+  install.packages("dbscan")
+  library(dbscan)
+}
+
+# Prepare normalized data for DBSCAN
+scaled_data <- district_data %>%
+  select(population, cases, incidence_per_1000) %>%
+  scale()
+
+# Run DBSCAN
+dbscan_result <- dbscan(scaled_data, eps = 0.9, minPts = 4)
+
+# In DBSCAN, cluster 0 represents outliers
+district_data$dbscan_cluster <- dbscan_result$cluster
+district_data$dbscan_outlier <- district_data$dbscan_cluster == 0
+
+cat("DBSCAN Clustering Results:\n")
+cat("Number of clusters:", length(unique(dbscan_result$cluster[dbscan_result$cluster > 0])), "\n")
+cat("Number of outliers:", sum(district_data$dbscan_outlier), "\n\n")
+
+# Visualize DBSCAN clusters in 2D (cases vs incidence)
+ggplot(district_data, aes(x = cases, y = incidence_per_1000, color = factor(dbscan_cluster))) +
+  geom_point(size = 3, alpha = 0.7) +
+  scale_color_manual(values = c("red", "blue", "green", "purple", "orange", "cyan")) +
+  labs(
+    title = "DBSCAN Clustering Results",
+    subtitle = "Cluster 0 (red) represents outliers",
+    x = "Number of Cases",
+    y = "Incidence per 1000 Population",
+    color = "Cluster"
+  ) +
+  theme_minimal()
+
+# 4. Compare results from different methods
+comparison <- district_data %>%
+  select(district_id, district_name, cases, population, incidence_per_1000,
+         iqr_outlier, z_outlier, dbscan_outlier) %>%
+  mutate(
+    outlier_count = iqr_outlier + z_outlier + dbscan_outlier,
+    consensus_outlier = outlier_count >= 2  # Flagged by at least 2 methods
+  ) %>%
+  filter(outlier_count > 0) %>%
+  arrange(desc(outlier_count))
+
+print(comparison)
+
+# Create a Venn diagram to visualize method overlap (simplified version)
+# Create sets for each method
+iqr_set <- district_data$district_id[district_data$iqr_outlier]
+z_set <- district_data$district_id[district_data$z_outlier]
+dbscan_set <- district_data$district_id[district_data$dbscan_outlier]
+
+# Calculate intersections
+iqr_z <- intersect(iqr_set, z_set)
+iqr_dbscan <- intersect(iqr_set, dbscan_set)
+z_dbscan <- intersect(z_set, dbscan_set)
+all_methods <- intersect(intersect(iqr_set, z_set), dbscan_set)
+
+cat("Outlier Detection Method Comparison:\n")
+cat("IQR method only:", length(setdiff(iqr_set, union(z_set, dbscan_set))), "districts\n")
+cat("Z-score method only:", length(setdiff(z_set, union(iqr_set, dbscan_set))), "districts\n")
+cat("DBSCAN method only:", length(setdiff(dbscan_set, union(iqr_set, z_set))), "districts\n")
+cat("IQR and Z-score:", length(setdiff(iqr_z, dbscan_set)), "districts\n")
+cat("IQR and DBSCAN:", length(setdiff(iqr_dbscan, z_set)), "districts\n")
+cat("Z-score and DBSCAN:", length(setdiff(z_dbscan, iqr_set)), "districts\n")
+cat("All three methods:", length(all_methods), "districts\n")
+                </code>
+            </div>
+            
+            <div class="explanation">
+                <h4>Explanation:</h4>
+                <p>- The IQR method is non-parametric and robust to extreme values.<br>
+                - Z-score method assumes a normal distribution and flags values far from the mean.<br>
+                - DBSCAN identifies outliers as points that don't belong to any density-based cluster.<br>
+                - Combining methods provides stronger evidence: consensus outliers (flagged by multiple methods) are more likely to be true anomalies.</p>
+            </div>
+            
+            <hr>
+            
+            <h3>Exercise 3.3: Handling Outliers</h3>
+            <div class="r-code">
+                <code>
+# Continue with the district data and outliers identified earlier
+
+# 1. Remove outliers and compare summary statistics
+# Using consensus outliers (flagged by at least 2 methods)
+district_data$consensus_outlier <- (district_data$iqr_outlier + 
+                                  district_data$z_outlier + 
+                                  district_data$dbscan_outlier) >= 2
+
+data_without_outliers <- district_data %>%
+  filter(!consensus_outlier)
+
+# Compare summary statistics
+summary_comparison <- data.frame(
+  statistic = c("Mean Incidence", "Median Incidence", "Std Dev Incidence",
+               "Min Incidence", "Max Incidence", "IQR Incidence"),
+  original = c(
+    mean(district_data$incidence_per_1000),
+    median(district_data$incidence_per_1000),
+    sd(district_data$incidence_per_1000),
+    min(district_data$incidence_per_1000),
+    max(district_data$incidence_per_1000),
+    IQR(district_data$incidence_per_1000)
+  ),
+  without_outliers = c(
+    mean(data_without_outliers$incidence_per_1000),
+    median(data_without_outliers$incidence_per_1000),
+    sd(data_without_outliers$incidence_per_1000),
+    min(data_without_outliers$incidence_per_1000),
+    max(data_without_outliers$incidence_per_1000),
+    IQR(data_without_outliers$incidence_per_1000)
+  )
+)
+
+# Calculate percent change
+summary_comparison$pct_change <- ((summary_comparison$without_outliers - 
+                                 summary_comparison$original) / 
+                                summary_comparison$original) * 100
+
+print(summary_comparison)
+
+# 2. Apply winsorization to cap extreme values
+winsorize <- function(x, probs = c(0.05, 0.95)) {
+  qnt <- quantile(x, probs = probs)
+  x[x < qnt[1]] <- qnt[1]
+  x[x > qnt[2]] <- qnt[2]
+  return(x)
+}
+
+district_data$incidence_winsorized <- winsorize(district_data$incidence_per_1000,
+                                               c(0.05, 0.95))
+
+# 3. Apply log transformation
+district_data$incidence_log <- log(district_data$incidence_per_1000)
+
+# Compare distributions
+par(mfrow = c(2, 2))
+hist(district_data$incidence_per_1000, main = "Original Incidence",
+     xlab = "Incidence per 1000", col = "lightblue")
+hist(data_without_outliers$incidence_per_1000, main = "Outliers Removed",
+     xlab = "Incidence per 1000", col = "lightgreen")
+hist(district_data$incidence_winsorized, main = "Winsorized (5-95%)",
+     xlab = "Incidence per 1000", col = "lightpink")
+hist(district_data$incidence_log, main = "Log Transformed",
+     xlab = "Log(Incidence per 1000)", col = "lightyellow")
+
+# Check normality with Shapiro-Wilk test
+shapiro_tests <- data.frame(
+  method = c("Original", "Outliers Removed", "Winsorized", "Log Transformed"),
+  p_value = c(
+    shapiro.test(district_data$incidence_per_1000)$p.value,
+    shapiro.test(data_without_outliers$incidence_per_1000)$p.value,
+    shapiro.test(district_data$incidence_winsorized)$p.value,
+    shapiro.test(district_data$incidence_log)$p.value
+  )
+)
+
+print(shapiro_tests)
+
+# 4. Build regression models with different outlier handling methods
+
+# Create some predictor variables for regression
+district_data$rainfall_mm <- 800 + 5*district_data$district_id + rnorm(40, 0, 100)
+district_data$poverty_rate <- 15 + 0.5*district_data$district_id + rnorm(40, 0, 5)
+district_data$health_centers <- round(runif(40, 1, 10))
+
+# Set seed for reproducibility
+set.seed(123)
+
+# Original data model
+model_original <- lm(incidence_per_1000 ~ rainfall_mm + poverty_rate + health_centers,
+                    data = district_data)
+
+# Model without outliers
+model_no_outliers <- lm(incidence_per_1000 ~ rainfall_mm + poverty_rate + health_centers,
+                       data = data_without_outliers)
+
+# Model with winsorized data
+model_winsorized <- lm(incidence_winsorized ~ rainfall_mm + poverty_rate + health_centers,
+                      data = district_data)
+
+# Model with log-transformed data
+model_log <- lm(incidence_log ~ rainfall_mm + poverty_rate + health_centers,
+               data = district_data)
+
+# Compare model summaries
+model_comparison <- data.frame(
+  method = c("Original", "Outliers Removed", "Winsorized", "Log Transformed"),
+  r_squared = c(
+    summary(model_original)$r.squared,
+    summary(model_no_outliers)$r.squared,
+    summary(model_winsorized)$r.squared,
+    summary(model_log)$r.squared
+  ),
+  adj_r_squared = c(
+    summary(model_original)$adj.r.squared,
+    summary(model_no_outliers)$adj.r.squared,
+    summary(model_winsorized)$adj.r.squared,
+    summary(model_log)$adj.r.squared
+  ),
+  rainfall_coef = c(
+    coef(model_original)["rainfall_mm"],
+    coef(model_no_outliers)["rainfall_mm"],
+    coef(model_winsorized)["rainfall_mm"],
+    coef(model_log)["rainfall_mm"]
+  ),
+  poverty_coef = c(
+    coef(model_original)["poverty_rate"],
+    coef(model_no_outliers)["poverty_rate"],
+    coef(model_winsorized)["poverty_rate"],
+    coef(model_log)["poverty_rate"]
+  )
+)
+
+print(model_comparison)
+
+# Visualize coefficient changes across methods
+coef_long <- model_comparison %>%
+  select(method, rainfall_coef, poverty_coef) %>%
+  pivot_longer(
+    cols = c(rainfall_coef, poverty_coef),
+    names_to = "coefficient",
+    values_to = "value"
+  )
+
+ggplot(coef_long, aes(x = method, y = value, fill = method)) +
+  geom_col() +
+  facet_wrap(~coefficient, scales = "free_y") +
+  labs(
+    title = "Comparison of Regression Coefficients",
+    subtitle = "Different outlier handling methods",
+    x = "Method",
+    y = "Coefficient Value"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+                </code>
+            </div>
+            
+            <div class="explanation">
+                <h4>Explanation:</h4>
+                <p>- Removing outliers often reduces the standard deviation and range but may not significantly change the median.<br>
+                - Winsorization preserves all observations but caps extreme values at specified percentiles.<br>
+                - Log transformation can normalize right-skewed distributions and reduce the impact of high outliers.<br>
+                - Different outlier handling methods can significantly affect regression coefficients and model fit.</p>
+            </div>
+        </div>
+        
+        <hr>
+        
+        <h2>💡 What's Next?</h2>
+        <p>✔ After completing Week 5, you have learned to reshape data, combine multiple datasets, and handle outliers.<br>
+        ✔ In <strong>Week 6</strong>, we will explore statistical analysis techniques specifically for malaria data, including hypothesis testing, correlation analysis, and regression modeling.</p>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>

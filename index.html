@@ -56,7 +56,7 @@
         
         <h3>Step 1: Understanding Data Formats</h3>
         <div class="r-code">
-            <code>
+            <pre><code>
 # Load required packages
 library(tidyr)
 library(dplyr)
@@ -72,7 +72,7 @@ malaria_wide <- data.frame(
 )
 
 print(malaria_wide)
-            </code>
+            </code></pre>
         </div>
         
         <div class="explanation">
@@ -86,7 +86,7 @@ print(malaria_wide)
         
         <h3>Step 2: Pivot Longer (Wide to Long)</h3>
         <div class="r-code">
-            <code>
+            <pre><code>
 # Convert from wide to long format
 malaria_long <- malaria_wide %>%
   pivot_longer(
@@ -106,7 +106,7 @@ ggplot(malaria_long, aes(x = month, y = cases, fill = region)) +
     y = "Number of Cases"
   ) +
   theme_minimal()
-            </code>
+            </code></pre>
         </div>
         
         <div class="explanation">
@@ -122,7 +122,7 @@ ggplot(malaria_long, aes(x = month, y = cases, fill = region)) +
         
         <h3>Step 3: Pivot Wider (Long to Wide)</h3>
         <div class="r-code">
-            <code>
+            <pre><code>
 # Convert from long to wide format
 malaria_wide_restored <- malaria_long %>%
   pivot_wider(
@@ -143,7 +143,7 @@ region_month_summary <- malaria_long %>%
   arrange(desc(total_cases))
 
 print(region_month_summary)
-            </code>
+            </code></pre>
         </div>
         
         <div class="explanation">
@@ -158,7 +158,7 @@ print(region_month_summary)
         
         <h3>Step 4: Advanced Pivoting with Real Malaria Data</h3>
         <div class="r-code">
-            <code>
+            <pre><code>
 # Load a malaria surveillance dataset
 malaria_surveillance <- read.csv("malaria_surveillance.csv")
 
@@ -192,7 +192,7 @@ age_gender_cases <- malaria_surveillance %>%
   mutate(male_to_female_ratio = Male / Female)
 
 print(age_gender_cases)
-            </code>
+            </code></pre>
         </div>
         
         <div class="explanation">
@@ -212,7 +212,7 @@ print(age_gender_cases)
         
         <h3>Step 1: Understanding Join Types</h3>
         <div class="r-code">
-            <code>
+            <pre><code>
 # Create example datasets
 # Malaria case data
 malaria_cases <- data.frame(
@@ -233,7 +233,7 @@ interventions <- data.frame(
 # Examine the datasets
 print(malaria_cases)
 print(interventions)
-            </code>
+            </code></pre>
         </div>
         
         <div class="explanation">
@@ -248,7 +248,7 @@ print(interventions)
         
         <h3>Step 2: Inner Join</h3>
         <div class="r-code">
-            <code>
+            <pre><code>
 # Inner join: Keep only matching rows
 inner_joined <- malaria_cases %>%
   inner_join(interventions, by = "district_id")
@@ -260,7 +260,7 @@ cat("Original datasets:",
     "malaria_cases =", nrow(malaria_cases), "rows,", 
     "interventions =", nrow(interventions), "rows\n")
 cat("Inner joined result:", nrow(inner_joined), "rows\n")
-            </code>
+            </code></pre>
         </div>
         
         <div class="explanation">
@@ -275,7 +275,7 @@ cat("Inner joined result:", nrow(inner_joined), "rows\n")
         
         <h3>Step 3: Left Join</h3>
         <div class="r-code">
-            <code>
+            <pre><code>
 # Left join: Keep all rows from the left dataset
 left_joined <- malaria_cases %>%
   left_join(interventions, by = "district_id")
@@ -304,7 +304,7 @@ print(missing_intervention_data)
         
         <h3>Step 4: Other Join Types and Advanced Joining</h3>
         <div class="r-code">
-            <code>
+            <pre><code>
 # Right join: Keep all rows from the right dataset
 right_joined <- malaria_cases %>%
   right_join(interventions, by = "district_id")
@@ -351,7 +351,7 @@ ggplot(analysis_data, aes(x = itn_coverage, y = incidence_per_1000)) +
         
         <h3>Step 5: Joining Multiple Datasets</h3>
         <div class="r-code">
-            <code>
+            <pre><code>
 # Create a third dataset with environmental factors
 environmental <- data.frame(
   district_id = c(101, 102, 103, 104, 105, 108),
@@ -381,7 +381,7 @@ strongest_factors <- sort(abs(cases_correlations), decreasing = TRUE)
 
 print("Strongest correlations with malaria cases:")
 print(strongest_factors)
-            </code>
+            </code></pre>
         </div>
         
         <div class="explanation">
@@ -401,7 +401,7 @@ print(strongest_factors)
         
         <h3>Step 1: Visualizing Distributions with Boxplots</h3>
         <div class="r-code">
-            <code>
+            <pre><code>
 # Create example dataset with outliers
 malaria_districts <- data.frame(
   district = paste0("District_", 1:30),
@@ -430,7 +430,7 @@ ggplot(malaria_districts, aes(y = incidence)) +
     y = "Incidence per 1000 Population"
   ) +
   theme_minimal()
-            </code>
+            </code></pre>
         </div>
         
         <div class="explanation">
@@ -445,7 +445,7 @@ ggplot(malaria_districts, aes(y = incidence)) +
         
         <h3>Step 2: Identifying Specific Outliers</h3>
         <div class="r-code">
-            <code>
+            <pre><code>
 # Identify outliers using IQR method
 identify_outliers <- function(x) {
   q1 <- quantile(x, 0.25)
@@ -473,7 +473,7 @@ print(malaria_outliers)
 # Calculate the percentage of outliers
 outlier_percentage <- nrow(malaria_outliers) / nrow(malaria_districts) * 100
 cat("Percentage of districts with outliers:", round(outlier_percentage, 1), "%\n")
-            </code>
+            </code></pre>
         </div>
         
         <div class="explanation">
@@ -488,7 +488,7 @@ cat("Percentage of districts with outliers:", round(outlier_percentage, 1), "%\n
         
         <h3>Step 3: Visualizing Outliers with Scatterplots</h3>
         <div class="r-code">
-            <code>
+            <pre><code>
 # Add population data (for demonstration)
 set.seed(123)
 malaria_districts$population <- round(runif(30, 15000, 30000))
@@ -523,7 +523,7 @@ ggplot(malaria_districts, aes(x = population, y = calculated_incidence)) +
     color = "Status"
   ) +
   theme_minimal()
-            </code>
+            </code></pre>
         </div>
         
         <div class="explanation">
@@ -538,7 +538,7 @@ ggplot(malaria_districts, aes(x = population, y = calculated_incidence)) +
         
         <h3>Step 4: Statistical Detection of Outliers</h3>
         <div class="r-code">
-            <code>
+            <pre><code>
 # Z-Score method
 malaria_districts <- malaria_districts %>%
   mutate(
@@ -594,7 +594,7 @@ print(dbscan_outliers)
         
         <h3>Step 5: Handling Outliers in Analysis</h3>
         <div class="r-code">
-            <code>
+            <pre><code>
 # Method 1: Remove outliers
 data_without_outliers <- malaria_districts %>%
   filter(!cases_outlier)
@@ -806,7 +806,7 @@ hist(malaria_districts$cases_log, main = "Log-transformed Cases", xlab = "Log(Ca
             
             <h3>Exercise 1.1: Basic Pivoting</h3>
             <div class="r-code">
-                <code>
+                <pre><code>
 # Load required packages
 library(tidyr)
 library(dplyr)
@@ -866,7 +866,7 @@ month_region_wide <- malaria_long %>%
   )
 
 print(month_region_wide)
-                </code>
+                </code></pre>
             </div>
             
             <div class="explanation">
@@ -881,7 +881,7 @@ print(month_region_wide)
             
             <h3>Exercise 1.2: Advanced Pivoting</h3>
             <div class="r-code">
-                <code>
+                <pre><code>
 # Create age-specific incidence data (wide format)
 age_incidence_wide <- data.frame(
   region = c("Central", "North", "South", "East", "West"),
@@ -992,7 +992,7 @@ summary_table <- total_cases_by_age %>%
   select(region, total_cases, contains("percentage"))
 
 print(summary_table)
-                </code>
+                </code></pre>
             </div>
             
             <div class="explanation">
@@ -1007,7 +1007,7 @@ print(summary_table)
             
             <h3>Exercise 1.3: Pivoting with Time Series Data</h3>
             <div class="r-code">
-                <code>
+                <pre><code>
 # Create multi-year monthly malaria data
 years <- 2020:2022
 months <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", 
@@ -1112,7 +1112,7 @@ ggplot(yoy_changes, aes(x = month, y = yoy_change_pct, fill = as.factor(year))) 
     fill = "Year"
   ) +
   theme_minimal()
-                </code>
+                </code></pre>
             </div>
             
             <div class="explanation">
@@ -1129,7 +1129,7 @@ ggplot(yoy_changes, aes(x = month, y = yoy_change_pct, fill = as.factor(year))) 
             
             <h3>Exercise 2.1: Basic Joins</h3>
             <div class="r-code">
-                <code>
+                <pre><code>
 # Create example datasets
 # Malaria case data
 malaria_cases <- data.frame(
@@ -1200,7 +1200,7 @@ ggplot(incidence_data %>% filter(!is.na(incidence_per_1000)),
   ) +
   theme_minimal() +
   coord_flip()
-                </code>
+                </code></pre>
             </div>
             
             <div class="explanation">
@@ -1215,7 +1215,7 @@ ggplot(incidence_data %>% filter(!is.na(incidence_per_1000)),
             
             <h3>Exercise 2.2: Multiple Joins</h3>
             <div class="r-code">
-                <code>
+                <pre><code>
 # Create additional datasets
 # Intervention data
 interventions <- data.frame(
@@ -1286,7 +1286,7 @@ for (i in 1:3) {
   direction <- ifelse(cor_value > 0, "positive", "negative")
   cat(i, ". ", var_name, " (", direction, " correlation: ", round(cor_value, 2), ")\n", sep = "")
 }
-                </code>
+                </code></pre>
             </div>
             
             <div class="explanation">
@@ -1301,7 +1301,7 @@ for (i in 1:3) {
             
             <h3>Exercise 2.3: Advanced Join Applications</h3>
             <div class="r-code">
-                <code>
+                <pre><code>
 # Create longitudinal case data
 case_time_series <- data.frame(
   district_id = rep(c(101, 102, 103, 104, 105), each = 8),
@@ -1419,7 +1419,7 @@ recent_performance <- intervention_analysis %>%
   arrange(desc(priority_score), desc(recent_incidence))
 
 print(recent_performance)
-                </code>
+                </code></pre>
             </div>
             
             <div class="explanation">
@@ -1436,7 +1436,7 @@ print(recent_performance)
             
             <h3>Exercise 3.1: Visual Outlier Detection</h3>
             <div class="r-code">
-                <code>
+                <pre><code>
 # Create example dataset with outliers
 set.seed(123)
 district_data <- data.frame(
@@ -1547,7 +1547,7 @@ district_data %>%
   select(district_id, district_name, incidence_per_1000, iqr_outlier, z_outlier) %>%
   filter(iqr_outlier | z_outlier) %>%
   arrange(desc(incidence_per_1000))
-                </code>
+                </code></pre>
             </div>
             
             <div class="explanation">
@@ -1562,7 +1562,7 @@ district_data %>%
             
             <h3>Exercise 3.2: Statistical Outlier Detection</h3>
             <div class="r-code">
-                <code>
+                <pre><code>
 # Continue with the district data from previous exercise
 
 # 1. Use IQR method for outlier detection
@@ -1675,7 +1675,7 @@ cat("IQR and Z-score:", length(setdiff(iqr_z, dbscan_set)), "districts\n")
 cat("IQR and DBSCAN:", length(setdiff(iqr_dbscan, z_set)), "districts\n")
 cat("Z-score and DBSCAN:", length(setdiff(z_dbscan, iqr_set)), "districts\n")
 cat("All three methods:", length(all_methods), "districts\n")
-                </code>
+                </code></pre>
             </div>
             
             <div class="explanation">
@@ -1690,7 +1690,7 @@ cat("All three methods:", length(all_methods), "districts\n")
             
             <h3>Exercise 3.3: Handling Outliers</h3>
             <div class="r-code">
-                <code>
+                <pre><code>
 # Continue with the district data and outliers identified earlier
 
 # 1. Remove outliers and compare summary statistics
@@ -1846,7 +1846,7 @@ ggplot(coef_long, aes(x = method, y = value, fill = method)) +
   ) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-                </code>
+                </code></pre>
             </div>
             
             <div class="explanation">
